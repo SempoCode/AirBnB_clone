@@ -1,190 +1,125 @@
 #!/usr/bin/python3
 """
-This module implements the command interpreter for the AirBnB clone project.
-
-It uses the cmd module to create an interactive shell that allows users to
-create,
-update, destroy, and display instances of BaseModel and other classes in the
-project.
+Console Module for the AirBnB Clone Project
+This module provides a command-line interface to interact with the AirBnB
+clone.
+It allows users to create, show, update, destroy, and list User objects.
 """
 
 import cmd
-from models.base_model import BaseModel
 from models import storage
-
+from models.user import User
 
 class HBNBCommand(cmd.Cmd):
-    """
-    The command interpreter class that extends cmd.Cmd for the AirBnB clone.
-    
-    Methods:
-        do_create: Creates a new instance of a class.
-        do_show: Displays an instance based on class name and id.
-        do_destroy: Deletes an instance based on class name and id.
-        do_all: Prints all string representations of all instances.
-        do_update: Updates an instance by adding or updating an attribute.
-        emptyline: Overrides default behavior to do nothing on empty input.
-        do_quit: Exits the console.
-        do_EOF: Handles the EOF signal to exit the console.
-    """
-    
+    """Command interpreter for the AirBnB clone."""
     prompt = '(hbnb) '
 
-    def do_create(self, args):
+    def do_create(self, line):
+        """Create a new User instance and save it to the JSON file.
+        Usage: create <class_name>
         """
-        Creates a new instance of BaseModel and prints its id.
-        
-        Usage: create <class name>
-        
-        Args:
-            args (str): The name of the class to create.
-            
-        Example:
-            (hbnb) create BaseModel
-        """
-        if not args:
-            print("** class name missing **")
-        elif args not in globals():
-            print("** class doesn't exist **")
-        else:
-            new_instance = eval(args)()
-            new_instance.save()
-            print(new_instance.id)
-
-    def do_show(self, args):
-        """
-        Prints the string representation of an instance based on
-        class name and id.
-        
-        Usage: show <class name> <id>
-        
-        Args:
-            args (str): The class name and id of the instance to show.
-            
-        Example:
-            (hbnb) show BaseModel 1234-5678-9012
-        """
-        if not args:
+        if not line:
             print("** class name missing **")
             return
-        arg_list = args.split()
-        if arg_list[0] not in globals():
-            print("** class doesn't exist **")
-        elif len(arg_list) == 1:
-            print("** instance id missing **")
-        else:
-            key = "{}.{}".format(arg_list[0], arg_list[1])
-            obj = storage.all().get(key)
-            if obj is None:
-                print("** no instance found **")
-            else:
-                print(obj)
-
-    def do_destroy(self, args):
-        """
-        Deletes an instance based on the class name and id, and updates
-        the JSON file.
-        
-        Usage: destroy <class name> <id>
-        
-        Args:
-            args (str): The class name and id of the instance to destroy.
-            
-        Example:
-            (hbnb) destroy BaseModel 1234-5678-9012
-        """
-        if not args:
-            print("** class name missing **")
-            return
-        arg_list = args.split()
-        if arg_list[0] not in globals():
-            print("** class doesn't exist **")
-        elif len(arg_list) == 1:
-            print("** instance id missing **")
-        else:
-            key = "{}.{}".format(arg_list[0], arg_list[1])
-            if key in storage.all():
-                del storage.all()[key]
-                storage.save()
-            else:
-                print("** no instance found **")
-
-    def do_all(self, args):
-        """
-        Prints all string representations of all instances, optionally
-        based on class name.
-        
-        Usage: all [<class name>]
-        
-        Args:
-            args (str): Optional class name to filter results.
-            
-        Example:
-            (hbnb) all BaseModel
-            (hbnb) all
-        """
-        objs = storage.all()
-        obj_list = []
-        if not args:
-            for obj in objs.values():
-                obj_list.append(str(obj))
-        elif args in globals():
-            for key, obj in objs.items():
-                if key.startswith(args):
-                    obj_list.append(str(obj))
-        else:
+        if line != "User":
             print("** class doesn't exist **")
             return
-        print(obj_list)
+        new_user = User()
+        new_user.save()
+        print(new_user.id)
 
-    def do_update(self, args):
+    def do_show(self, line):
+        """Show a User instance by its ID.
+        Usage: show <class_name> <id>
         """
-        Updates an instance by adding or updating attributes.
-        
-        Usage: update <class name> <id> <attribute name> "<attribute
-        value>"
-        
-        Args:
-            args (str): The class name, id, attribute name, and value to
-            update.
-            
-        Example:
-            (hbnb) update BaseModel 1234-5678-9012 first_name "Betty"
-        """
-        arg_list = args.split()
-        if len(arg_list) == 0:
+        args = line.split()
+        if len(args) < 2:
             print("** class name missing **")
-        elif arg_list[0] not in globals():
+            return
+        if args[0] != "User":
             print("** class doesn't exist **")
-        elif len(arg_list) == 1:
+            return
+        if len(args) < 2:
             print("** instance id missing **")
-        else:
-            key = "{}.{}".format(arg_list[0], arg_list[1])
-            obj = storage.all().get(key)
-            if obj is None:
-                print("** no instance found **")
-            elif len(arg_list) == 2:
-                print("** attribute name missing **")
-            elif len(arg_list) == 3:
-                print("** value missing **")
-            else:
-                setattr(obj, arg_list[2], eval(arg_list[3]))
-                obj.save()
+            return
+        
+        user_id = args[1]
+        all_users = storage.all(User)
+        key = f"User.{user_id}"
+        if key not in all_users:
+            print("** no instance found **")
+            return
+        print(all_users[key])
 
-    def emptyline(self):
-        """Overrides default behavior to do nothing on empty input."""
-        pass
+    def do_destroy(self, line):
+        """Destroy a User instance by its ID.
+        Usage: destroy <class_name> <id>
+        """
+        args = line.split()
+        if len(args) < 2:
+            print("** class name missing **")
+            return
+        if args[0] != "User":
+            print("** class doesn't exist **")
+            return
+        if len(args) < 2:
+            print("** instance id missing **")
+            return
+        
+        user_id = args[1]
+        all_users = storage.all(User)
+        key = f"User.{user_id}"
+        if key not in all_users:
+            print("** no instance found **")
+            return
+        del all_users[key]
+        storage.save()
 
-    def do_quit(self, args):
-        """Quits the console."""
+    def do_update(self, line):
+        """Update a User instance by its ID.
+        Usage: update <class_name> <id> <attribute_name> <attribute_value>
+        """
+        args = line.split()
+        if len(args) < 4:
+            print("** class name missing **" if len(args) < 1 else
+                  "** instance id missing **" if len(args) < 2 else
+                  "** attribute name missing **" if len(args) < 3 else
+                  "** value missing **")
+            return
+        if args[0] != "User":
+            print("** class doesn't exist **")
+            return
+
+        user_id = args[1]
+        all_users = storage.all(User)
+        key = f"User.{user_id}"
+        if key not in all_users:
+            print("** no instance found **")
+            return
+
+        setattr(all_users[key], args[2], args[3])
+        all_users[key].save()
+
+    def do_all(self, line):
+        """Display all User instances.
+        Usage: all <class_name> (optional)
+        """
+        if line and line != "User":
+            print("** class doesn't exist **")
+            return
+        
+        all_users = storage.all(User)
+        for user in all_users.values():
+            print(user)
+
+    def do_quit(self, line):
+        """Quit command to exit the program."""
         return True
 
-    def do_EOF(self, args):
-        """Handles the EOF signal to exit the console."""
-        print()
+    def do_EOF(self, line):
+        """EOF command to exit the program."""
         return True
 
 
 if __name__ == '__main__':
     HBNBCommand().cmdloop()
-
