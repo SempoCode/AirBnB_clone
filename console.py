@@ -4,9 +4,9 @@ import cmd
 
 class HBNBCommand(cmd.Cmd):
     """Command interpreter for HBNB"""
-    
+
     prompt = "(hbnb) "  # Custom prompt
-    
+
     def do_quit(self, arg):
         """Quit command to exit the program"""
         return True
@@ -19,6 +19,7 @@ class HBNBCommand(cmd.Cmd):
     def emptyline(self):
         """Do nothing when an empty line is entered"""
         pass
+
 
 if __name__ == '__main__':
     HBNBCommand().cmdloop()  # Start the command loop
